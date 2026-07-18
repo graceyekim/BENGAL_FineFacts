@@ -1,0 +1,106 @@
+# Generic, domain-neutral rubric for evaluating LLM extractions.
+#
+# Use with ff.optimize_prompt(...) to iteratively improve a user's prompt.
+# Designed to apply to ANY extraction task — not science-news-specific.
+#
+# Grading context:
+#   query    = the source article (title + text)
+#   to_grade = the LLM-produced extraction JSON
+#
+# Score formula (AutoRubric-style):
+#   score = sum(met_positive_weights) / sum(all_positive_weights)
+#   negative-weight criteria SUBTRACT from the numerator when they fire.
+
+rubric:
+
+  # === Output validity ===
+
+  - name: valid_json
+    weight: 10.0
+    requirement: >
+      The extraction parses as valid JSON. Output is a single well-formed
+      object or array — not wrapped in extra prose, not truncated.
+
+  - name: schema_adherence
+    weight: 10.0
+    requirement: >
+      The extraction follows the schema implied or stated by the prompt.
+      All required fields appear with the requested types and structure.
+      No extra top-level keys that the prompt did not ask for.
+
+  # === Factual grounding ===
+
+  - name: factual_grounding
+    weight: 10.0
+    requirement: >
+      Every claim in the extraction is directly supported by content in
+      the source article. No information has been inferred, embellished,
+      or carried in from outside the article.
+
+  - name: no_hallucination
+    weight: -20.0
+    requirement: >
+      One or more extracted items contain information (names, numbers,
+      dates, quotes, attributions) that is NOT present in the source
+      article and appears to have been invented or wrongly inferred.
+
+  - name: numerical_precision
+    weight: 5.0
+    requirement: >
+      All numbers, percentages, dates, and measurements in the extraction
+      exactly match the source article. No rounding, approximation, or
+      substitution of similar-but-different values.
+
+  # === Completeness ===
+
+  - name: key_content_coverage
+    weight: 10.0
+    requirement: >
+      All major substantive content from the article appears in the
+      extraction. The main claims, central named entities, and primary
+      conclusions are represented. Minor supporting details may be omitted
+      but the core content is complete.
+
+  # === Decontextualization quality ===
+
+  - name: standalone_interpretability
+    weight: 8.0
+    requirement: >
+      Each extracted item is understandable on its own, without needing
+      to read the source article for context.
+
+  - name: pronoun_resolution
+    weight: 5.0
+    requirement: >
+      Pronouns ("he", "she", "they", "it") in extracted items have been
+      replaced with the named entity they refer to.
+
+  - name: discourse_marker_removal
+    weight: 3.0
+    requirement: >
+      Extracted items do not begin with or contain discourse markers
+      ("however", "therefore", "in addition", "meanwhile") that depend
+      on surrounding article context.
+
+  # === Opinion / framing separation ===
+
+  - name: opinion_separation
+    weight: 8.0
+    requirement: >
+      Opinion, speculation, and editorial framing have been correctly
+      separated from factual claims. Subjective material is either
+      excluded or clearly marked as opinion in the appropriate field.
+
+  - name: opinion_leakage
+    weight: -15.0
+    requirement: >
+      The extraction presents one or more opinions, speculations, or
+      editorial framings as if they were factual claims.
+
+  # === Source faithfulness ===
+
+  - name: verbatim_copying
+    weight: -8.0
+    requirement: >
+      One or more extracted items are large verbatim copies of article
+      sentences with no decontextualization, paraphrasing, or distillation.

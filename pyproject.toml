@@ -1,0 +1,49 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "finefacts"
+version = "0.1.0"
+description = "LLM-based fact extraction from text corpora."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Apache-2.0" }
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Development Status :: 3 - Alpha",
+    "License :: OSI Approved :: Apache Software License",
+]
+dependencies = [
+    "anthropic>=0.40.0,<1.0",
+    "pydantic>=2.0,<3.0",
+    "litellm>=1.50,<3.0",
+    "tqdm>=4.60,<5.0",
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+parquet = ["pyarrow>=15.0"]
+distill = ["transformers", "trl", "peft", "datasets", "accelerate", "torch>=2.5"]
+analysis = [
+    "sentence-transformers>=3.0",
+    "sqlite-vec>=0.1.6",
+    "hdbscan>=0.8.40",
+    "scikit-learn>=1.5",
+    "numpy>=1.26",
+]
+
+[project.urls]
+Homepage = "https://github.com/graceyekim/FineFactsDemo"
+
+[project.scripts]
+finefacts = "finefacts.package.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["finefacts*"]
+
+[tool.setuptools.package-data]
+finefacts = ["py.typed"]
+"finefacts.package" = ["rubrics/*.yaml"]
+"finefacts.package._scripts" = ["*.py"]
